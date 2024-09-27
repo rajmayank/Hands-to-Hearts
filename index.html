@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam View with Hand Detection</title>
+    <title>Hands to Heart - For Prisha</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="script.js" defer></script>
 </head>
+
 <body>
     <div id="loader">
         <div class="spinner"></div>
-        <p>Loading...</p>
+        <p id="loading-message">Loading...</p>
     </div>
     <video id="webcam" autoplay playsinline></video>
     <canvas id="output"></canvas>
-    <script src="script.js"></script>
+    <div id="error-message" style="display: none; color: red; text-align: center; padding: 20px;"></div>
 </body>
+
 </html>

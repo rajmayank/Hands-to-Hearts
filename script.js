@@ -1,28 +1,47 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const video = document.getElementById("webcam");
-  const canvas = document.getElementById("output");
-  const ctx = canvas.getContext("2d");
-  const loader = document.getElementById("loader");
+const video = document.getElementById("webcam");
+const canvas = document.getElementById("output");
+const ctx = canvas.getContext("2d");
+const loader = document.getElementById("loader");
+const loadingMessage = document.getElementById("loading-message");
+const errorMessage = document.getElementById("error-message");
 
-  let hearts = [];
-  let camera;
+let hearts = [];
+let camera;
 
-  async function startWebcam() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
+async function setup() {
+  try {
+    loadingMessage.textContent = "Starting webcam...";
+    await startWebcam();
+    
+    loadingMessage.textContent = "Initializing hand detection...";
+    await startHandDetection();
+    
+    hideLoader();
+  } catch (err) {
+    console.error("Error during setup:", err);
+    showError("An error occurred during setup. Please refresh the page and try again.");
+  }
+}
+
+async function startWebcam() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    return new Promise((resolve) => {
       video.onloadedmetadata = () => {
+        video.play();
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        startHandDetection();
+        resolve();
       };
-    } catch (err) {
-      console.error("Error accessing the webcam:", err);
-      hideLoader();
-    }
+    });
+  } catch (err) {
+    throw new Error("Failed to start webcam: " + err.message);
   }
+}
 
-  function startHandDetection() {
+async function startHandDetection() {
+  try {
     const hands = new Hands({
       locateFile: (file) => {
         return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`;
@@ -43,14 +62,23 @@ document.addEventListener("DOMContentLoaded", function () {
       width: 1280,
       height: 720,
     });
-    camera.start().then(() => {
-      hideLoader();
-    });
+    return camera.start();
+  } catch (err) {
+    throw new Error("Failed to start hand detection: " + err.message);
   }
+}
 
-  function hideLoader() {
-    loader.style.display = "none";
-  }
+function hideLoader() {
+  loader.style.display = "none";
+}
+
+function showError(message) {
+  hideLoader();
+  errorMessage.textContent = message;
+  errorMessage.style.display = "block";
+}
+
+document.addEventListener("DOMContentLoaded", setup);
 
   function onResults(results) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -112,6 +140,3 @@ document.addEventListener("DOMContentLoaded", function () {
       heart.opacity -= 0.02;
     });
   }
-
-  startWebcam();
-});
